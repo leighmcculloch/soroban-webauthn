@@ -1171,6 +1171,7 @@ dependencies = [
 name = "test_ecdsa_p256"
 version = "0.1.0"
 dependencies = [
+ "ecdsa",
  "p256",
  "soroban-sdk",
 ]
