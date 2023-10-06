@@ -53,9 +53,10 @@ impl CustomAccountInterface for Contract {
 
 #[cfg(test)]
 mod test {
-    use soroban_sdk::Env;
+    use soroban_sdk::{Env, Bytes};
 
     use crate::{Contract, ContractClient};
+    use p256::ecdsa::{signature::Verifier, VerifyingKey};
 
     #[test]
     fn test_hello() {
@@ -63,6 +64,17 @@ mod test {
         let contract_id = e.register_contract(None, Contract);
         let client = ContractClient::new(&e, &contract_id);
 
-        client.empty();
+        let challenge = Bytes::from_array(&e, b"authchallenge000");
+        let pk = Bytes::from_array(&e, b"");
+        let authenticatorData = Bytes::from_array(&e, b"");
+        let clientDataJSON = Bytes::from_array(&e, b"");
+        let signature = Bytes::from_array(&e, b"");
+
+        let mut payload = Bytes::new(&e);
+        payload.append(&authenticatorData);
+        payload.append(&e.crypto().sha256(&clientDataJSON).into());
+
+        let verifying_key = VerifyingKey::from(value);
+        verifying_key.verify(message, &signature);
     }
 }

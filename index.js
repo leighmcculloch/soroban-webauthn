@@ -46,7 +46,7 @@
           name: "test1",
           displayName: "Test 1",
         },
-        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+        pubKeyCredParams: [{ alg: -8, type: "public-key" }],
       },
     });
     const response = credObj.response;

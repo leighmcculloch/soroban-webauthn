@@ -11,10 +11,10 @@ import (
 
 const (
 	challenge           = "authchallenge000"
-	pk64                = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdGnAhwti+4Wgux7voWpnO8vFzdhouvv+uFCsJpdzT1wm/3yKGFSphpxOyhhoRCmpHsp5f5tbGlrCLKvmgxwSpQ=="
-	authenticatorData64 = "SZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2MFAAAAAQ=="
+	pk64                = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEPTpHDMruXAF1oQiFgZofG5PFcpDzbaQXqrfV2WCpZ425U3H37QvSt9VFv6UHiKRBqv9n7gYnKH1hqIfrc7wNYg=="
+	authenticatorData64 = "SZYN5YgOjGh0NBcPZHZgW4/krrmihjLHmVzzuoMdl2MFAAAAAA=="
 	clientDataJSON64    = "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWVhWMGFHTm9ZV3hzWlc1blpUQXdNQSIsIm9yaWdpbiI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDUwNyIsImNyb3NzT3JpZ2luIjpmYWxzZX0="
-	signature64         = "MEYCIQD6vLsaAneI5dx90oJ90yBRf6sn/TuukfJnU7Ep2MwQMQIhAOgh8h7skPEtSPyKybIXM2069Fz8yTvNQsBtyExXeuyV"
+	signature64         = "MEUCIHg6wL+3EQhPK4fy+FwqQtLUrq/Wa5Ntpf9WrquyDRJgAiEAogTRbuYfqknO8AkdRK8X0iHjDbRC4urBEwMPMn3Oj6A="
 )
 
 func main() {
@@ -61,6 +61,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("Sig len:", len(sig))
 	verified := ecdsa.VerifyASN1(pk, hash[:], sig)
 	fmt.Println(verified)
 }
