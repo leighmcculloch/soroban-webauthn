@@ -2,7 +2,7 @@ use crate::{Contract, ContractClient, Error, Signature};
 use soroban_sdk::{testutils::Address, vec, Bytes, BytesN, Env, IntoVal};
 
 #[test]
-fn test_hello() {
+fn test_init_and_check_auth() {
     let e = Env::default();
     let contract_id = e.register_contract(None, Contract);
     let client = ContractClient::new(&e, &contract_id);
