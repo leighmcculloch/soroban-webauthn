@@ -1,0 +1,21 @@
+[package]
+name = "passkey-account-ed25519"
+version = "0.1.0"
+authors = ["Stellar Development Foundation <info@stellar.org>"]
+license = "Apache-2.0"
+edition = "2021"
+publish = false
+rust-version = "1.72"
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = {version = "20.0.0-rc2"}
+microjson = {version = "0.1.2"}
+base64-url = {version= "2.0.0", default-features = false}
+# p256 = {version = "0.13.2", default-features = false, features = ["ecdsa"]}
+
+[dev-dependencies]
+soroban-sdk = {version = "20.0.0-rc2", features = ["testutils"]}
