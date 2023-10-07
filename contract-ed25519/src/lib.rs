@@ -1,4 +1,5 @@
 #![no_std]
+use base64::Engine;
 use microjson::JSONValue;
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
@@ -102,9 +103,10 @@ impl CustomAccountInterface for Contract {
         // output with the length of the base64url that'll be passed in will be
         // 33 bytes, even though our value will only ever be 32 bytes.
         let mut challenge_decoded_buffer = [0u8; 33];
-        let challenge_decoded =
-            base64_url::decode_to_slice(challenge, &mut challenge_decoded_buffer)
-                .map_err(|_| Error::ClientDataJsonChallengeInvalidBase64Url)?;
+        let challenge_decoded_len = base64::engine::general_purpose::URL_SAFE_NO_PAD
+            .decode_slice(challenge, &mut challenge_decoded_buffer)
+            .map_err(|_| Error::ClientDataJsonChallengeInvalidBase64Url)?;
+        let challenge_decoded = &challenge_decoded_buffer[..challenge_decoded_len];
         let challenge: BytesN<32> = Bytes::from_slice(&e, challenge_decoded)
             .try_into()
             .map_err(|_| Error::ClientDataJsonChallengeIncorrectLength)?;
