@@ -42,9 +42,9 @@
           id: "localhost",
         },
         user: {
-          id: new TextEncoder().encode("test1"),
-          name: "test1",
-          displayName: "Test 1",
+          id: new TextEncoder().encode("Soroban Test"),
+          name: "Soroban Test",
+          displayName: "Soroban Test",
         },
         pubKeyCredParams: [{ alg: -8, type: "public-key" }],
       },
@@ -65,7 +65,7 @@
     console.log("authing passkey");
     const authObj = await navigator.credentials.get({
       publicKey: {
-        challenge: new TextEncoder().encode("\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"),
+        challenge: Uint8Array.from("6c49a09d3bd176f17d2eb440bd726d11cc8c2ba9ad92b431b8b0923b6a8633df".match(/.{1,2}/g).map((b) => parseInt(b, 16))),
         rpId: "localhost",
         allowCredentials: [{ type: "public-key", id: cred.rawId }],
       },
