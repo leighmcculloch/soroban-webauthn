@@ -3,8 +3,8 @@ use base64::Engine;
 use microjson::JSONValue;
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
-    contract, contracterror, contractimpl, contracttype, symbol_short, Bytes, BytesN, Env, Symbol,
-    Vec,
+    contract, contracterror, contractimpl, contracttype, log, symbol_short, Bytes, BytesN, Env,
+    Symbol, Vec,
 };
 
 #[contract]
