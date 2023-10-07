@@ -22,7 +22,9 @@ pub enum Error {
     ClientDataJsonChallengeIncorrectLength = 8,
     ClientDataJsonChallengeIncorrect = 9,
 
-    // TODO: Remove this error when changing Vec<Signature> to Signature.
+    // TODO: Remove this error when changing Vec<Signature> to Signature, after
+    // https://github.com/stellar/rs-soroban-sdk/pull/1110 is in use in this
+    // contract.
     SignaturesIncorrectLength = 90,
 }
 
