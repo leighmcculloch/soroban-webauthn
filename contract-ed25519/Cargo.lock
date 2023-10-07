@@ -699,15 +699,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
 
 [[package]]
-name = "passkey-account-ed25519"
-version = "0.1.0"
-dependencies = [
- "base64-url",
- "microjson",
- "soroban-sdk",
-]
-
-[[package]]
 name = "paste"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1341,6 +1332,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9157cab83003221bfd385833ab587a039f5d6fa7304854042ba358a3b09e0724"
 dependencies = [
  "indexmap-nostd",
+]
+
+[[package]]
+name = "webauthn-account-ed25519"
+version = "0.1.0"
+dependencies = [
+ "base64-url",
+ "microjson",
+ "soroban-sdk",
 ]
 
 [[package]]

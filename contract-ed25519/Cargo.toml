@@ -1,5 +1,5 @@
 [package]
-name = "passkey-account-ed25519"
+name = "webauthn-account-ed25519"
 version = "0.1.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
