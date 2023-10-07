@@ -58,6 +58,8 @@ impl CustomAccountInterface for Contract {
     fn __check_auth(
         e: Env,
         signature_payload: BytesN<32>,
+        // TODO: Change Vec<Signaure> to Signature when
+        // https://github.com/stellar/rs-soroban-sdk/pull/1110 is released.
         signatures: Vec<Signature>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
