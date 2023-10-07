@@ -64,6 +64,7 @@ impl CustomAccountInterface for Contract {
         signatures: Vec<Signature>,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
+        log!(&e, "leigh");
         let signature = signatures.first().ok_or(Error::SignaturesIncorrectLength)?;
 
         // Verify that the public key produced the signature.
