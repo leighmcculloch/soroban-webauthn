@@ -90,10 +90,9 @@ impl CustomAccountInterface for Contract {
         encode(&mut expected_prefix[36..79], &signature_payload.to_array());
         let expected_prefix = Bytes::from_slice(&e, &expected_prefix);
 
-        let prefix = signature.client_data_json.slice(..expected_prefix.len());
-
         // Check that the prefix containing the challenge/signature-payload is
         // the prefix expected.
+        let prefix = signature.client_data_json.slice(..expected_prefix.len());
         if prefix != expected_prefix {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
