@@ -13,13 +13,7 @@ pub struct Contract;
 pub enum Error {
     NotInited = 1,
     AlreadyInited = 2,
-    ClientDataJsonExceedsSizeLimit = 3,
-    ClientDataJsonInvalidUtf8 = 4,
-    ClientDataJsonInvalidJson = 5,
-    ClientDataJsonChallengeInvalidJsonType = 6,
-    ClientDataJsonChallengeInvalidBase64Url = 7,
-    ClientDataJsonChallengeIncorrectLength = 8,
-    ClientDataJsonChallengeIncorrect = 9,
+    ClientDataJsonChallengeIncorrect = 3,
 
     // TODO: Remove this error when changing Vec<Signature> to Signature, after
     // https://github.com/stellar/rs-soroban-sdk/pull/1110 is in use in this
@@ -41,7 +35,6 @@ impl Contract {
 }
 
 #[contracttype]
-#[derive(Clone, Eq, PartialEq)]
 pub struct Signature {
     pub authenticator_data: Bytes,
     pub client_data_json: Bytes,
@@ -82,12 +75,12 @@ impl CustomAccountInterface for Contract {
         // here would be to decode the JSON and extract the "challenge" key's
         // value, then base64 URL decode the value and compare the result.
         // However, even with "lightweight" JSON and base64 dependencies the
-        // contract comes out pretty large at 15kb. Doing the base64 encode
-        // in a minimal fashion and comparing the prefix requires less
-        // resources and should be as safe, albeit not as resilient if a client
-        // ever produces valid JSON that just happens to have different prefix.
+        // contract comes out a little large. Doing the base64 encode in a
+        // minimal fashion and comparing the prefix requires less resources and
+        // should be as safe, albeit not as resilient if a client ever produces
+        // valid JSON that just happens to have different prefix.
         let mut expected_prefix = *b"{\"type\":\"webauthn.get\",\"challenge\":\"___________________________________________\"";
-        encode(&mut expected_prefix[36..79], &signature_payload.to_array());
+        base64_url_encode(&mut expected_prefix[36..79], &signature_payload.to_array());
         let expected_prefix = Bytes::from_slice(&e, &expected_prefix);
 
         // Check that the prefix containing the challenge/signature-payload is
@@ -101,7 +94,7 @@ impl CustomAccountInterface for Contract {
     }
 }
 
-fn encode(dst: &mut [u8], src: &[u8]) {
+fn base64_url_encode(dst: &mut [u8], src: &[u8]) {
     // Ported from https://github.com/golang/go/blob/26b5783b72376acd0386f78295e678b9a6bff30e/src/encoding/base64/base64.go#L53-L192
     //
     // Modifications:
