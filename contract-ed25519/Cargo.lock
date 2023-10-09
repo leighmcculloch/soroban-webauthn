@@ -619,12 +619,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f232d6ef707e1956a43342693d2a31e72989554d58299d7a88738cc95b0d35c"
 
 [[package]]
-name = "microjson"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eab0b15327cee039b97f25f19ad54a8d6fa053b48c9b580b9b1f116ffc436b2c"
-
-[[package]]
 name = "miniz_oxide"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1329,8 +1323,6 @@ dependencies = [
 name = "webauthn-account-ed25519"
 version = "0.1.0"
 dependencies = [
- "base64 0.21.4",
- "microjson",
  "soroban-sdk",
 ]
 

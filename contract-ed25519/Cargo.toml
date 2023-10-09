@@ -13,8 +13,6 @@ doctest = false
 
 [dependencies]
 soroban-sdk = {version = "20.0.0-rc2"}
-microjson = {version = "0.1.2"}
-base64 = { version = "0.21.4", default-features = false }
 # p256 = {version = "0.13.2", default-features = false, features = ["ecdsa"]}
 
 [dev-dependencies]

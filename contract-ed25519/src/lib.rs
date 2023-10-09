@@ -1,6 +1,4 @@
 #![no_std]
-use base64::Engine;
-use microjson::JSONValue;
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contracterror, contractimpl, contracttype, symbol_short, Bytes, BytesN, Env, Symbol,
@@ -78,47 +76,99 @@ impl CustomAccountInterface for Contract {
         e.crypto()
             .ed25519_verify(&pk, &payload, &signature.signature);
 
-        // Parse the clientDataJson and extract the challenge.
-        let mut client_data_json_buffer = [0u8; 256];
-        let client_data_json_slice = client_data_json_buffer
-            .get_mut(..signature.client_data_json.len() as usize)
-            .ok_or(Error::ClientDataJsonExceedsSizeLimit)?;
-        signature
-            .client_data_json
-            .copy_into_slice(client_data_json_slice);
-        let client_data_json_str = core::str::from_utf8(client_data_json_slice)
-            .map_err(|_| Error::ClientDataJsonInvalidUtf8)?;
-        let client_data =
-            JSONValue::parse(client_data_json_str).map_err(|_| Error::ClientDataJsonInvalidJson)?;
-        let challenge_value = client_data
-            .get_key_value("challenge")
-            .map_err(|_| Error::ClientDataJsonInvalidJson)?;
-        let challenge = challenge_value
-            .read_string()
-            .map_err(|_| Error::ClientDataJsonChallengeInvalidJsonType)?;
+        // Build what is expected to be the beginning of the client data to
+        // contain, including the challenge value, which is expected to be the
+        // signature payload base64 URL encoded. The most resilient thing to do
+        // here would be to decode the JSON and extract the "challenge" key's
+        // value, then base64 URL decode the value and compare the result.
+        // However, even with "lightweight" JSON and base64 dependencies the
+        // contract comes out pretty large at 15kb. Doing the base64 encode
+        // in a minimal fashion and comparing the prefix requires less
+        // resources and should be as safe, albeit not as resilient if a client
+        // ever produces valid JSON that just happens to have different prefix.
+        let mut expected_prefix = *b"{\"type\":\"webauthn.get\",\"challenge\":\"___________________________________________\"";
+        encode(&mut expected_prefix[36..79], &signature_payload.to_array());
+        let expected_prefix = Bytes::from_slice(&e, &expected_prefix);
 
-        // Decode the challenge, which should be a 32-byte value encoded as a
-        // 64-character hex string that is base64 url encoded. Note: The
-        // base64url lib needs 33 bytes allocated because the maximum possible
-        // output with the length of the base64url that'll be passed in will be
-        // 33 bytes, even though our value will only ever be 32 bytes.
-        let mut challenge_decoded_buffer = [0u8; 33];
-        let challenge_decoded_len = base64::engine::general_purpose::URL_SAFE_NO_PAD
-            .decode_slice(challenge, &mut challenge_decoded_buffer)
-            .map_err(|_| Error::ClientDataJsonChallengeInvalidBase64Url)?;
-        let challenge_decoded = &challenge_decoded_buffer[..challenge_decoded_len];
-        let challenge: BytesN<32> = Bytes::from_slice(&e, challenge_decoded)
-            .try_into()
-            .map_err(|_| Error::ClientDataJsonChallengeIncorrectLength)?;
+        let prefix = signature.client_data_json.slice(..expected_prefix.len());
 
-        // Check that the challenge is the signature payload hash, to check
-        // that the public key's signature included the Soroban Auth
-        // payload.
-        if challenge != signature_payload {
+        // Check that the prefix containing the challenge/signature-payload is
+        // the prefix expected.
+        if prefix != expected_prefix {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
 
         Ok(())
+    }
+}
+
+fn encode(dst: &mut [u8], src: &[u8]) {
+    // Ported from https://github.com/golang/go/blob/26b5783b72376acd0386f78295e678b9a6bff30e/src/encoding/base64/base64.go#L53-L192
+    //
+    // Modifications:
+    //    * Removed logic supporting padding.
+    //    * Hardcoded the Base64 URL alphabet.
+    //    * Ported to Rust.
+    //
+    // Original Copyright notice:
+    //
+    // Copyright (c) 2009 The Go Authors. All rights reserved.
+    // Redistribution and use in source and binary forms, with or without
+    // modification, are permitted provided that the following conditions are
+    // met:
+    //
+    //    * Redistributions of source code must retain the above copyright
+    // notice, this list of conditions and the following disclaimer.
+    //    * Redistributions in binary form must reproduce the above
+    // copyright notice, this list of conditions and the following disclaimer
+    // in the documentation and/or other materials provided with the
+    // distribution.
+    //    * Neither the name of Google Inc. nor the names of its
+    // contributors may be used to endorse or promote products derived from
+    // this software without specific prior written permission.
+    //
+    // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    // LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    // A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    // OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    // SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    // LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    // DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+    let mut di: usize = 0;
+    let mut si: usize = 0;
+    let n = (src.len() / 3) * 3;
+    while si < n {
+        let val = (src[si] as usize) << 16 | (src[si + 1] as usize) << 8 | (src[si + 2] as usize);
+        dst[di] = ALPHABET[val >> 18 & 0x3F];
+        dst[di + 1] = ALPHABET[val >> 12 & 0x3F];
+        dst[di + 2] = ALPHABET[val >> 6 & 0x3F];
+        dst[di + 3] = ALPHABET[val & 0x3F];
+        si += 3;
+        di += 4;
+    }
+
+    let remain = src.len() - si;
+    if remain == 0 {
+        return;
+    }
+
+    let mut val = (src[si] as usize) << 16;
+    if remain == 2 {
+        val |= (src[si + 1] as usize) << 8;
+    }
+
+    dst[di] = ALPHABET[val >> 18 & 0x3F];
+    dst[di + 1] = ALPHABET[val >> 12 & 0x3F];
+
+    if remain == 2 {
+        dst[di + 2] = ALPHABET[val >> 6 & 0x3F];
     }
 }
 
