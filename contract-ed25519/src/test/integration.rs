@@ -1,5 +1,8 @@
 use crate::{Contract, ContractClient};
 use soroban_sdk::{contract, contractimpl, xdr, Address, BytesN, Env, IntoVal};
+use stellar_xdr::WriteXdr;
+
+extern crate std;
 
 #[contract]
 pub struct RequireAuthContract;
@@ -32,6 +35,28 @@ fn test_custom_auth() {
         &Address::from_contract_id(&[1; 32].into_val(&e)),
         RequireAuthContract,
     );
+
+    let invocation = xdr::SorobanAuthorizedInvocation {
+        // This invocation tree results in a signature payload of
+        // 6c49a09d3bd176f17d2eb440bd726d11cc8c2ba9ad92b431b8b0923b6a8633df.
+        function: xdr::SorobanAuthorizedFunction::ContractFn(xdr::InvokeContractArgs {
+            contract_address: (&contract_id).try_into().unwrap(),
+            function_name: "reqauth".try_into().unwrap(),
+            args: [(&id).try_into().unwrap()].try_into().unwrap(),
+        }),
+        sub_invocations: xdr::VecM::default(),
+    };
+    let xdr = xdr::HashIdPreimage::SorobanAuthorization(xdr::HashIdPreimageSorobanAuthorization {
+        invocation: invocation.clone(),
+        network_id: xdr::Hash([0; 32]),
+        nonce: 0,
+        signature_expiration_ledger: 1,
+    })
+    .to_xdr()
+    .unwrap();
+    let hash = sha256::digest(xdr);
+    std::println!("hash: {hash}");
+
     let client = RequireAuthContractClient::new(&e, &contract_id);
     client
         .set_auths(&[xdr::SorobanAuthorizationEntry {
@@ -96,16 +121,7 @@ fn test_custom_auth() {
                     .unwrap(),
                 ))),
             }),
-            root_invocation: xdr::SorobanAuthorizedInvocation {
-                // This invocation tree results in a signature payload of
-                // 6c49a09d3bd176f17d2eb440bd726d11cc8c2ba9ad92b431b8b0923b6a8633df.
-                function: xdr::SorobanAuthorizedFunction::ContractFn(xdr::InvokeContractArgs {
-                    contract_address: contract_id.try_into().unwrap(),
-                    function_name: "reqauth".try_into().unwrap(),
-                    args: [(&id).try_into().unwrap()].try_into().unwrap(),
-                }),
-                sub_invocations: xdr::VecM::default(),
-            },
+            root_invocation: invocation,
         }])
         .reqauth(&id);
 }

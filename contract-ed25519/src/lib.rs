@@ -47,19 +47,16 @@ pub struct Signature {
 }
 
 #[contractimpl]
-impl CustomAccountInterface for Contract {
-    type Error = Error;
-    type Signature = Signature;
-
+impl Contract {
     #[allow(non_snake_case)]
-    fn __check_auth(
+    pub fn __check_auth(
         e: Env,
         signature_payload: BytesN<32>,
         // TODO: Change Vec<Signaure> to Signature when
         // https://github.com/stellar/rs-soroban-sdk/pull/1110 is released.
         signatures: Vec<Signature>,
         _auth_contexts: Vec<Context>,
-    ) -> Result<(), Error> {
+    ) -> Result<u32, Error> {
         let signature = signatures.first().ok_or(Error::SignaturesIncorrectLength)?;
 
         // Verify that the public key produced the signature.
@@ -95,6 +92,6 @@ impl CustomAccountInterface for Contract {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
 
-        Ok(())
+        Ok(15)
     }
 }

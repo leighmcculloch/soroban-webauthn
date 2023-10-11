@@ -1,9 +1,28 @@
 <html>
-    <head>
-        <script src="index.js" defer></script>
-    </head>
-    <body>
-        <button id="create-passkey">Create Passkey</button>
-        <button id="auth-with-passkey">Auth with Passkey</button>
-    </body>
+  <head>
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js" defer></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" defer></script>
+    <script src="https://unpkg.com/@babel/standalone@7.9.4/babel.min.js" defer></script>
+
+    <script src="https://unpkg.com/stellar-sdk@11.0.0-beta.4/dist/stellar-sdk.js" defer></script>
+
+    <script type="text/babel" src="logs.js" defer></script>
+    <script type="text/babel" src="hash.js" defer></script>
+    <script type="text/babel" src="account.js" defer></script>
+    <script type="text/babel" src="contract.js" defer></script>
+    <script type="text/babel" src="tx.js" defer></script>
+    <script type="text/babel" src="credential.js" defer></script>
+    <script type="text/babel" src="credential_create.js" defer></script>
+    <script type="text/babel" src="refund.js" defer></script>
+    <script type="text/babel" src="fund.js" defer></script>
+    <script type="text/babel" src="deploy.js" defer></script>
+    <script type="text/babel" src="bundler.js" defer></script>
+    <script type="text/babel" src="ui.js" defer></script>
+    <script type="text/babel" src="init.js" defer></script>
+
+    <link type="text/css" rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="ui"></div>
+  </body>
 </html>

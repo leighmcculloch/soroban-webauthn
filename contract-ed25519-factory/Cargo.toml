@@ -1,5 +1,5 @@
 [package]
-name = "webauthn-account-ed25519"
+name = "webauthn-factory-ed25519"
 version = "0.1.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"
@@ -13,12 +13,9 @@ doctest = false
 
 [dependencies]
 soroban-sdk = {version = "20.0.0-rc2"}
-# p256 = {version = "0.13.2", default-features = false, features = ["ecdsa"]}
 
 [dev-dependencies]
 soroban-sdk = {version = "20.0.0-rc2", features = ["testutils"]}
-stellar-xdr = {version = "20.0.0-rc1", default-features = false, features = ["std", "curr"]}
-sha256 = "1.4.0"
 
 [profile.release]
 opt-level = "z"

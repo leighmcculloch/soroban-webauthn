@@ -1,0 +1,25 @@
+body {
+  font-family: sans-serif;
+}
+
+input {
+  font-family: monospace;
+}
+
+fieldset {
+  margin-bottom: 10px;
+  border: 1px solid grey;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+li {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  word-wrap: break-word;
+}
