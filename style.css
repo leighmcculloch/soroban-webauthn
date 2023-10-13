@@ -23,3 +23,15 @@ li {
   width: 100%;
   word-wrap: break-word;
 }
+
+.row {
+  display: flex;
+}
+
+.logs {
+  flex: 50%;
+}
+
+.effects {
+  flex: 50%;
+}

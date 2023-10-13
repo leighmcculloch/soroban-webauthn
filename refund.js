@@ -16,7 +16,7 @@ class Refund extends React.Component {
     const fnName = "transfer";
     const argFrom = StellarSdk.xdr.ScVal.scvAddress(StellarSdk.Address.fromString(this.props.accountContractId).toScAddress());
     const argTo = StellarSdk.xdr.ScVal.scvAddress(StellarSdk.Address.fromString(this.props.bundlerKey.publicKey()).toScAddress());
-    const argAmount = StellarSdk.nativeToScVal(100, { type: 'i128' });
+    const argAmount = StellarSdk.nativeToScVal(1000000000, { type: 'i128' });
     const invocationArgs = new StellarSdk.xdr.InvokeContractArgs({
       contractAddress: StellarSdk.Address.fromString(this.props.nativeContractId).toScAddress(),
       functionName: fnName,
@@ -172,7 +172,7 @@ class Refund extends React.Component {
       <div>
         <fieldset>
           <legend>Refund</legend>
-          <button onClick={this.handleRefund} disabled={this.props.accountContractId == null}>Refund (Bundler 👈 Account)</button>
+          <button onClick={this.handleRefund} disabled={this.props.accountContractId == null}>Refund 100 (Bundler 👈 Account)</button>
         </fieldset>
       </div>
     );

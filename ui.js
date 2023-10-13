@@ -81,7 +81,16 @@ class Ui extends React.Component {
             accountContractId={this.state.accountContractId}
             credential={this.state.credential}
             />
-          <Logs {...this.props} logs={this.state.logs} />
+          <div className="row">
+            <div className="effects">
+              <Effects {...this.props}
+                accountContractId={this.state.accountContractId}
+                />
+            </div>
+            <div className="logs">
+              <Logs {...this.props} logs={this.state.logs} />
+            </div>
+          </div>
         </div>
       );
   }
