@@ -18,6 +18,6 @@ deploy:
 
 restore:
 	soroban contract restore --id CDMLFMKMMD7MWZP3FKUBZPVHTUEDLSX4BYGYKH4GCESXYHS3IHQ4EIG4 || true
-	soroban contract restore --id CD6VP5L62X4MSMUVJPH5T3NEM5BDI45WU2E2OXG54JUYR2Y7KOQ5SN2V || true
+	soroban contract restore --id CC53X4CQ4WKOZ5R4BVAQ6K57IGY6KWUKP37NTKVLC2SESB2CA4RH3Q2E || true
 	soroban contract restore --wasm-hash 4c8fa1392a052d344401ad8da9a99a66c57cbfd3871f2a2de98daa325f45512e || true
 	soroban contract restore --wasm-hash a40cbcffa428add4f2ada31d904c5c03a4921e84b652b2351106f424e4aaf786 || true

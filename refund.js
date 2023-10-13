@@ -26,7 +26,7 @@ class Refund extends React.Component {
       function: StellarSdk.xdr.SorobanAuthorizedFunction.sorobanAuthorizedFunctionTypeContractFn(invocationArgs),
       subInvocations: [],
     });
-    const nonce = new StellarSdk.xdr.Int64(0);
+    const nonce = new StellarSdk.xdr.Int64(Date.now());
     const signatureExpirationLedger = lastLedger + 100;
 
     const authHash = StellarSdk.hash(
@@ -126,6 +126,16 @@ class Refund extends React.Component {
             StellarSdk.xdr.LedgerKey.account(
               new StellarSdk.xdr.LedgerKeyAccount({
                 accountId: this.props.bundlerKey.xdrAccountId(),
+              })
+            ),
+            // Auth nonce for the sender (account contract).
+            StellarSdk.xdr.LedgerKey.contractData(
+              new StellarSdk.xdr.LedgerKeyContractData({
+                contract: StellarSdk.Address.fromString(this.props.accountContractId).toScAddress(),
+                key: StellarSdk.xdr.ScVal.scvLedgerKeyNonce(
+                  new StellarSdk.xdr.ScNonceKey({ nonce })
+                ),
+                durability: StellarSdk.xdr.ContractDataDurability.temporary()
               })
             ),
           ],

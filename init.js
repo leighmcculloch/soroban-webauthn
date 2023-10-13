@@ -2,7 +2,7 @@ ReactDOM.render(<Ui
   networkPassphrase="Standalone Network ; February 2017"
   nativeContractId="CDMLFMKMMD7MWZP3FKUBZPVHTUEDLSX4BYGYKH4GCESXYHS3IHQ4EIG4"
   factoryContractWasm="4c8fa1392a052d344401ad8da9a99a66c57cbfd3871f2a2de98daa325f45512e"
-  factoryContractId="CCAY6YZG7KFFTQ7BARNE4STOWFD4FO56WZZW5T56NHEUYA5UDYJZRMJL"
+  factoryContractId="CC53X4CQ4WKOZ5R4BVAQ6K57IGY6KWUKP37NTKVLC2SESB2CA4RH3Q2E"
   accountContractWasm="a40cbcffa428add4f2ada31d904c5c03a4921e84b652b2351106f424e4aaf786"
   friendbotUrl="http://localhost:8000/friendbot"
   horizonUrl="http://localhost:8000"
