@@ -15,7 +15,6 @@ class CredentialCreate extends React.Component {
           challenge: new TextEncoder().encode("createchallenge"),
           rp: {
             name: "Passkey Test",
-            id: "localhost",
           },
           user: {
             id: new TextEncoder().encode("Soroban Test"),
