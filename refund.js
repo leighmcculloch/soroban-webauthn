@@ -43,7 +43,6 @@ class Refund extends React.Component {
     const credentialAuth = await navigator.credentials.get({
       publicKey: {
         challenge: new Uint8Array(authHash),
-        rpId: "localhost",
         allowCredentials: [{ type: "public-key", id: this.props.credential.rawId }],
       },
     });
