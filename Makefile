@@ -1,5 +1,6 @@
 export SOROBAN_RPC_URL=http://localhost:8000/soroban/rpc
-export SOROBAN_NETWORK_PASSPHRASE=Standalone Network ; February 2017
+# export SOROBAN_NETWORK_PASSPHRASE=Standalone Network ; February 2017
+export SOROBAN_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
 
 serve:
 	deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts

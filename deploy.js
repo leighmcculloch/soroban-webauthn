@@ -74,7 +74,7 @@ class Deploy extends React.Component {
           3472, // Read Bytes
           160, // Write Bytes
         )
-        .setRefundableFee(20058)
+        .setRefundableFee(40058)
         .build())
       .build();
 
