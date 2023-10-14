@@ -1,5 +1,5 @@
 [package]
-name = "webauthn-factory-ed25519"
+name = "webauthn-factory"
 version = "0.1.0"
 authors = ["Stellar Development Foundation <info@stellar.org>"]
 license = "Apache-2.0"

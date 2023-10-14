@@ -1320,7 +1320,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "webauthn-factory-ed25519"
+name = "webauthn-factory"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk",

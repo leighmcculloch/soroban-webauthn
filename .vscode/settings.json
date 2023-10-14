@@ -1,6 +1,7 @@
 {
     "rust-analyzer.linkedProjects": [
+        "./contract-factory/Cargo.toml",
         "./contract-ed25519/Cargo.toml",
-        "./contract-ed25519-factory/Cargo.toml"
+        "./contract-secp256r1/Cargo.toml",
     ]
 }
