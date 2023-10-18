@@ -8,7 +8,13 @@ class Deploy extends React.Component {
   }
 
   async handleDeploy() {
-    const argWasmHash = this.hexToUint8Array(this.props.accountContractWasm);
+    let argWasmHash;
+    if (this.props.credential.response.getPublicKeyAlgorithm() == -8) {
+      argWasmHash = this.hexToUint8Array(this.props.accountContractEd25519Wasm);
+    }
+    if (this.props.credential.response.getPublicKeyAlgorithm() == -7) {
+      argWasmHash = this.hexToUint8Array(this.props.accountContractSecp256r1Wasm);
+    }
     const argPk = new Uint8Array(this.props.credential.response.getPublicKey()).slice(12);
 
     const deployee = StellarSdk.StrKey.encodeContract(StellarSdk.hash(StellarSdk.xdr.HashIdPreimage.envelopeTypeContractId(
@@ -17,7 +23,7 @@ class Deploy extends React.Component {
         contractIdPreimage: StellarSdk.xdr.ContractIdPreimage.contractIdPreimageFromAddress(
           new StellarSdk.xdr.ContractIdPreimageFromAddress({
             address: StellarSdk.Address.fromString(this.props.factoryContractId).toScAddress(),
-            salt: argPk,
+            salt: StellarSdk.hash(argPk),
           })
        )
       })
@@ -32,7 +38,7 @@ class Deploy extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 11055000, networkPassphrase: this.props.networkPassphrase },
+      { fee: 1001055000, networkPassphrase: this.props.networkPassphrase },
     ).addOperation(contract.call(
       "deploy",
       StellarSdk.xdr.ScVal.scvBytes(argPk),
@@ -70,7 +76,7 @@ class Deploy extends React.Component {
           ],
         )
         .setResources(
-          4535694, // Instructions
+          80535694, // Instructions
           3472, // Read Bytes
           160, // Write Bytes
         )

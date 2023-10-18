@@ -103,9 +103,13 @@ class Refund extends React.Component {
                 durability: StellarSdk.xdr.ContractDataDurability.persistent()
               })
             ),
-            // Contract code for account contract.
+            // Contract code for the ed25519 account contract.
             StellarSdk.xdr.LedgerKey.contractCode(
-              new StellarSdk.xdr.LedgerKeyContractCode({ hash: this.hexToUint8Array(this.props.accountContractWasm) })
+              new StellarSdk.xdr.LedgerKeyContractCode({ hash: this.hexToUint8Array(this.props.accountContractEd25519Wasm) })
+            ),
+            // Contract code for the secp256r1 account contract.
+            StellarSdk.xdr.LedgerKey.contractCode(
+              new StellarSdk.xdr.LedgerKeyContractCode({ hash: this.hexToUint8Array(this.props.accountContractSecp256r1Wasm) })
             ),
           ],
           // Write

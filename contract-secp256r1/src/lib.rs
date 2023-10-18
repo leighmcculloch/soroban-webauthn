@@ -24,6 +24,8 @@ pub enum Error {
     // https://github.com/stellar/rs-soroban-sdk/pull/1110 is in use in this
     // contract.
     SignaturesIncorrectLength = 90,
+
+    Err = 100,
 }
 
 const STORAGE_KEY_PK: Symbol = symbol_short!("pk");
@@ -62,18 +64,27 @@ impl CustomAccountInterface for Contract {
         let signature = signatures.first().ok_or(Error::SignaturesIncorrectLength)?;
 
         // Verify that the public key produced the signature.
-        let pk = e
+        let mut msg = Bytes::new(&e);
+        msg.append(&signature.authenticator_data);
+        msg.append(&e.crypto().sha256(&signature.client_data_json).into());
+        let payload = e.crypto().sha256(&msg).to_array();
+
+        use p256::ecdsa::{signature::Verifier, VerifyingKey};
+
+        let pk: BytesN<65> = e
             .storage()
             .instance()
             .get(&STORAGE_KEY_PK)
             .ok_or(Error::NotInited)?;
-        let mut msg = Bytes::new(&e);
-        msg.append(&signature.authenticator_data);
-        msg.append(&e.crypto().sha256(&signature.client_data_json).into());
-        let payload = e.crypto().sha256(&msg).into();
-    
-        e.crypto()
-            .ed25519_verify(&pk, &payload, &signature.signature);
+        let pk_array = pk.to_array();
+
+        let signature_array = signature.signature.to_array();
+        let signature_p256 =
+            p256::ecdsa::Signature::from_slice(&signature_array).map_err(|_| Error::Err)?;
+        let verifying_key = VerifyingKey::from_sec1_bytes(&pk_array).map_err(|_| Error::Err)?;
+        verifying_key
+            .verify(&payload, &signature_p256)
+            .map_err(|_| Error::Err)?;
 
         // Build what is expected to be the beginning of the client data to
         // contain, including the challenge value, which is expected to be the
