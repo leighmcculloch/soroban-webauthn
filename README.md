@@ -1,6 +1,6 @@
 # Soroban Webauthn Account Contract
 
-| :warning: Code in this repository has not been audited and should not be used to hold, protect, or secure anything. |
+| :warning: Code in this repo is demo material only. It has not been audited. Do not use to hold, protect, or secure anything. |
 |-----------------------------------------|
 
 This repo contains [Soroban] contracts that demonstrate account abstraction on [Stellar], by supporting [Webauthn].
