@@ -13,9 +13,9 @@ build:
 	ls -lah out/*.wasm
 
 deploy:
-	soroban contract install --wasm out/webauthn_factory_ed25519.optimized.wasm
-	soroban contract deploy --wasm out/webauthn_factory_ed25519.optimized.wasm
-	soroban contract install --wasm out/webauthn_account_ed25519.optimized.wasm
+	soroban contract install --ignore-checks --wasm out/webauthn_factory_ed25519.optimized.wasm
+	soroban contract deploy --ignore-checks --wasm out/webauthn_factory_ed25519.optimized.wasm
+	soroban contract install --ignore-checks --wasm out/webauthn_account_ed25519.optimized.wasm
 
 restore:
 	soroban contract restore --id CDMLFMKMMD7MWZP3FKUBZPVHTUEDLSX4BYGYKH4GCESXYHS3IHQ4EIG4 || true

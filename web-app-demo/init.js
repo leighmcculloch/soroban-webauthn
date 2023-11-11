@@ -12,7 +12,7 @@ ReactDOM.render(<Ui
   networkPassphrase="Test SDF Network ; September 2015"
   nativeContractId="CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
   factoryContractWasm="4c8fa1392a052d344401ad8da9a99a66c57cbfd3871f2a2de98daa325f45512e"
-  factoryContractId="CDJN2IISJH6RMGSDBW5NTYSZKSH7KWSO3V3WV5724RAHHXBL7JOZ3UGJ"
+  factoryContractId="CDE23WMP24G2NL3FR5FVNHKXM2TFCENVPE5WYHASJUQZFKA3GRRANMOZ"
   accountContractWasm="a40cbcffa428add4f2ada31d904c5c03a4921e84b652b2351106f424e4aaf786"
   friendbotUrl="https://friendbot.stellar.org"
   horizonUrl="https://horizon-testnet.stellar.org"
