@@ -12,12 +12,12 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = {version = "20.0.0-rc2"}
+soroban-sdk = {version = "20.2.0"}
 # p256 = {version = "0.13.2", default-features = false, features = ["ecdsa"]}
 
 [dev-dependencies]
-soroban-sdk = {version = "20.0.0-rc2", features = ["testutils"]}
-stellar-xdr = {version = "20.0.0-rc1", default-features = false, features = ["std", "curr"]}
+soroban-sdk = {version = "20.2.0", features = ["testutils"]}
+stellar-xdr = {version = "20.0.2", default-features = false, features = ["std", "curr"]}
 sha256 = "1.4.0"
 
 [profile.release]

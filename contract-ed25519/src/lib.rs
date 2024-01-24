@@ -19,11 +19,6 @@ pub enum Error {
     NotInited = 1,
     AlreadyInited = 2,
     ClientDataJsonChallengeIncorrect = 3,
-
-    // TODO: Remove this error when changing Vec<Signature> to Signature, after
-    // https://github.com/stellar/rs-soroban-sdk/pull/1110 is in use in this
-    // contract.
-    SignaturesIncorrectLength = 90,
 }
 
 const STORAGE_KEY_PK: Symbol = symbol_short!("pk");
@@ -56,11 +51,9 @@ impl CustomAccountInterface for Contract {
         signature_payload: BytesN<32>,
         // TODO: Change Vec<Signaure> to Signature when
         // https://github.com/stellar/rs-soroban-sdk/pull/1110 is released.
-        signatures: Vec<Signature>,
+        signature: Signature,
         _auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
-        let signature = signatures.first().ok_or(Error::SignaturesIncorrectLength)?;
-
         // Verify that the public key produced the signature.
         let pk = e
             .storage()
