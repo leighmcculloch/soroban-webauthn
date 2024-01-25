@@ -8,7 +8,8 @@ class Deploy extends React.Component {
   }
 
   async handleDeploy() {
-    const argWasmHash = this.hexToUint8Array(this.props.accountContractWasm);
+    const argWasmHash = this.hexToUint8Array(this.wasmHash());
+
     const argPk = new Uint8Array(this.props.credential.response.getPublicKey()).slice(12);
 
     const deployee = StellarSdk.StrKey.encodeContract(StellarSdk.hash(StellarSdk.xdr.HashIdPreimage.envelopeTypeContractId(
@@ -107,13 +108,20 @@ class Deploy extends React.Component {
           <legend>Account Contract</legend>
           Factory Contract WASM Hash: <Hash {...this.props} id={this.props.factoryContractWasm} /><br/>
           Factory Contract ID: <Contract {...this.props} id={this.props.factoryContractId} /><br/>
-          Account Contract WASM Hash: <Hash {...this.props} id={this.props.accountContractWasm} /><br/>
+          Account Contract WASM Hash: <Hash {...this.props} id={this.wasmHash()} /><br/>
           {this.state.accountContractId
             && <span>Account Contract ID: <Contract {...this.props} id={this.state.accountContractId} /></span>
             || <button onClick={this.handleDeploy} disabled={this.props.bundlerKey == null || this.props.credential == null}>Deploy</button>}
         </fieldset>
       </div>
     );
+  }
+
+  wasmHash() {
+    switch (this.props.credential.response.getPublicKeyAlgorithm()) {
+      case -8: return this.props.accountEd25519ContractWasm;
+      case -7: return this.props.accountSecp256r1ContractWasm;
+    }
   }
 
   hexToUint8Array(hex) {
