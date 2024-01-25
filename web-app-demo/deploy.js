@@ -11,7 +11,6 @@ class Deploy extends React.Component {
     const argWasmHash = this.hexToUint8Array(this.wasmHash());
 
     // This logic is what happens for ed25519 public keys.
-    // TODO: Need to convert the DER ecdsa key to SEC1 for the secp256r1.
     const argPk = this.pk();
 
     const salt = new Uint8Array(await crypto.subtle.digest("SHA-256", argPk));
