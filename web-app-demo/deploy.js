@@ -18,7 +18,7 @@ class Deploy extends React.Component {
         contractIdPreimage: StellarSdk.xdr.ContractIdPreimage.contractIdPreimageFromAddress(
           new StellarSdk.xdr.ContractIdPreimageFromAddress({
             address: StellarSdk.Address.fromString(this.props.factoryContractId).toScAddress(),
-            salt: argPk,
+            salt: argPk.slice(0, 32), // Use the first 32-bytes of the pk, which isn't relaible
           })
        )
       })
@@ -118,7 +118,7 @@ class Deploy extends React.Component {
   }
 
   wasmHash() {
-    switch (this.props.credential.response.getPublicKeyAlgorithm()) {
+    switch (this.props.credential?.response?.getPublicKeyAlgorithm()) {
       case -8: return this.props.accountEd25519ContractWasm;
       case -7: return this.props.accountSecp256r1ContractWasm;
     }
