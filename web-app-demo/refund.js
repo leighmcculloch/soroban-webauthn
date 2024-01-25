@@ -144,7 +144,7 @@ class Refund extends React.Component {
           5396, // Read Bytes
           668, // Write Bytes
         )
-        .setRefundableFee(20536)
+        .setResourceFee(20536)
         .build())
       .build();
 

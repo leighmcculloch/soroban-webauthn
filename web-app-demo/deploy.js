@@ -12,13 +12,14 @@ class Deploy extends React.Component {
 
     const argPk = new Uint8Array(this.props.credential.response.getPublicKey()).slice(12);
 
+    const salt = new Uint8Array(await crypto.subtle.digest("SHA-256", argPk));
     const deployee = StellarSdk.StrKey.encodeContract(StellarSdk.hash(StellarSdk.xdr.HashIdPreimage.envelopeTypeContractId(
       new StellarSdk.xdr.HashIdPreimageContractId({
         networkId: StellarSdk.hash(this.props.networkPassphrase),
         contractIdPreimage: StellarSdk.xdr.ContractIdPreimage.contractIdPreimageFromAddress(
           new StellarSdk.xdr.ContractIdPreimageFromAddress({
             address: StellarSdk.Address.fromString(this.props.factoryContractId).toScAddress(),
-            salt: argPk.slice(0, 32), // Use the first 32-bytes of the pk, which isn't relaible
+            salt,
           })
        )
       })
@@ -71,11 +72,11 @@ class Deploy extends React.Component {
           ],
         )
         .setResources(
-          4535694, // Instructions
-          3472, // Read Bytes
-          160, // Write Bytes
+          16535694, // Instructions
+          40472, // Read Bytes
+          1060, // Write Bytes
         )
-        .setRefundableFee(40058)
+        .setResourceFee(400058)
         .build())
       .build();
 

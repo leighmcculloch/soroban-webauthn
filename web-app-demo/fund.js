@@ -77,7 +77,7 @@ class Fund extends React.Component {
           712, // Read Bytes
           368, // Write Bytes
         )
-        .setRefundableFee(84669)
+        .setResourceFee(84669)
         .build())
       .build();
 
