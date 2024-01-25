@@ -10,7 +10,9 @@ class Deploy extends React.Component {
   async handleDeploy() {
     const argWasmHash = this.hexToUint8Array(this.wasmHash());
 
-    const argPk = new Uint8Array(this.props.credential.response.getPublicKey()).slice(12);
+    // This logic is what happens for ed25519 public keys.
+    // TODO: Need to convert the DER ecdsa key to SEC1 for the secp256r1.
+    const argPk = this.pk();
 
     const salt = new Uint8Array(await crypto.subtle.digest("SHA-256", argPk));
     const deployee = StellarSdk.StrKey.encodeContract(StellarSdk.hash(StellarSdk.xdr.HashIdPreimage.envelopeTypeContractId(
@@ -116,6 +118,17 @@ class Deploy extends React.Component {
         </fieldset>
       </div>
     );
+  }
+
+  pk() {
+    const pk = new Uint8Array(this.props.credential.response.getPublicKey());
+    // Strip of ASN1 DER encoding header for each key type.
+    // This could do propr DER decoding, but since the header lengths are
+    // predictable, it is simply truncating the prefix.
+    switch (this.props.credential?.response?.getPublicKeyAlgorithm()) {
+      case -8: return pk.slice(12); // ed25519 has 12 bytes of DER stuff at the start
+      case -7: return pk.slice(26); // ecdsa keys have 26 bytes of DER stuff at the start
+    }
   }
 
   wasmHash() {
