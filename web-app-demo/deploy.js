@@ -35,7 +35,7 @@ class Deploy extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 11055000, networkPassphrase: this.props.networkPassphrase },
+      { fee: 21055000, networkPassphrase: this.props.networkPassphrase },
     ).addOperation(contract.call(
       "deploy",
       StellarSdk.xdr.ScVal.scvBytes(argPk),
@@ -74,10 +74,10 @@ class Deploy extends React.Component {
         )
         .setResources(
           16535694, // Instructions
-          40472, // Read Bytes
+          50472, // Read Bytes
           1060, // Write Bytes
         )
-        .setResourceFee(400058)
+        .setResourceFee(500058)
         .build())
       .build();
 

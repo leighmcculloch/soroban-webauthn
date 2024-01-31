@@ -7,6 +7,8 @@ class Refund extends React.Component {
   async handleRefund() {
     this.props.onLog(<span>⏳ Refunding...</span>);
 
+    const argWasmHash = this.hexToUint8Array(this.wasmHash());
+
     const ledgerResp = await (await fetch(`${this.props.horizonUrl}/ledgers/?order=desc&limit=1`)).json();
     const lastLedger = ledgerResp._embedded.records[0].sequence;
 
@@ -47,6 +49,9 @@ class Refund extends React.Component {
       },
     });
 
+    const signature73 = new Uint8Array(credentialAuth.response.signature);
+    const signature64 = this.hexToUint8Array(prompt([...signature73].map(x => x.toString(16).padStart(2, '0')).join(''), ""));
+
     const op = StellarSdk.Operation.invokeHostFunction({
       func: StellarSdk.xdr.HostFunction.hostFunctionTypeInvokeContract(invocationArgs),
       auth: [new StellarSdk.xdr.SorobanAuthorizationEntry({
@@ -56,21 +61,19 @@ class Refund extends React.Component {
             address: StellarSdk.Address.fromString(this.props.accountContractId).toScAddress(),
             nonce,
             signatureExpirationLedger,
-            signature: StellarSdk.xdr.ScVal.scvVec([
-              StellarSdk.xdr.ScVal.scvMap([
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('authenticator_data'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.authenticatorData)),
-                }),
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('client_data_json'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.clientDataJSON)),
-                }),
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('signature'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.signature)),
-                }),
-              ])
+            signature: StellarSdk.xdr.ScVal.scvMap([
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('authenticator_data'),
+                val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.authenticatorData)),
+              }),
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('client_data_json'),
+                val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.clientDataJSON)),
+              }),
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('signature'),
+                val: StellarSdk.xdr.ScVal.scvBytes(signature64),
+              }),
             ])
           })
         ),
@@ -105,7 +108,7 @@ class Refund extends React.Component {
             ),
             // Contract code for account contracts.
             StellarSdk.xdr.LedgerKey.contractCode(
-              new StellarSdk.xdr.LedgerKeyContractCode({ hash: this.hexToUint8Array(this.wasmHash()) })
+              new StellarSdk.xdr.LedgerKeyContractCode({ hash: argWasmHash })
             ),
           ],
           // Write
@@ -140,7 +143,7 @@ class Refund extends React.Component {
           ],
         )
         .setResources(
-          3480449, // Instructions
+          40480449, // Instructions
           5396, // Read Bytes
           668, // Write Bytes
         )
