@@ -14,7 +14,7 @@ class Credential extends React.Component {
     }
     return (
       <code>
-        {key && `${key.pk.slice(12)} (${this.algToName(key.pkAlg)})` || 'Not Created'}
+        {key && `${key.pk} (${this.algToName(key.pkAlg)})` || 'Not Created'}
       </code>
     );
   }

@@ -8,16 +8,19 @@ class Deploy extends React.Component {
   }
 
   async handleDeploy() {
-    const argWasmHash = this.hexToUint8Array(this.props.accountContractWasm);
-    const argPk = new Uint8Array(this.props.credential.response.getPublicKey()).slice(12);
+    const argWasmHash = this.hexToUint8Array(this.wasmHash());
 
+    // This logic is what happens for ed25519 public keys.
+    const argPk = this.pk();
+
+    const salt = new Uint8Array(await crypto.subtle.digest("SHA-256", argPk));
     const deployee = StellarSdk.StrKey.encodeContract(StellarSdk.hash(StellarSdk.xdr.HashIdPreimage.envelopeTypeContractId(
       new StellarSdk.xdr.HashIdPreimageContractId({
         networkId: StellarSdk.hash(this.props.networkPassphrase),
         contractIdPreimage: StellarSdk.xdr.ContractIdPreimage.contractIdPreimageFromAddress(
           new StellarSdk.xdr.ContractIdPreimageFromAddress({
             address: StellarSdk.Address.fromString(this.props.factoryContractId).toScAddress(),
-            salt: argPk,
+            salt,
           })
        )
       })
@@ -32,7 +35,7 @@ class Deploy extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 11055000, networkPassphrase: this.props.networkPassphrase },
+      { fee: 21055000, networkPassphrase: this.props.networkPassphrase },
     ).addOperation(contract.call(
       "deploy",
       StellarSdk.xdr.ScVal.scvBytes(argPk),
@@ -70,11 +73,11 @@ class Deploy extends React.Component {
           ],
         )
         .setResources(
-          4535694, // Instructions
-          3472, // Read Bytes
-          160, // Write Bytes
+          16535694, // Instructions
+          50472, // Read Bytes
+          1060, // Write Bytes
         )
-        .setRefundableFee(40058)
+        .setResourceFee(500058)
         .build())
       .build();
 
@@ -107,13 +110,31 @@ class Deploy extends React.Component {
           <legend>Account Contract</legend>
           Factory Contract WASM Hash: <Hash {...this.props} id={this.props.factoryContractWasm} /><br/>
           Factory Contract ID: <Contract {...this.props} id={this.props.factoryContractId} /><br/>
-          Account Contract WASM Hash: <Hash {...this.props} id={this.props.accountContractWasm} /><br/>
+          Account Contract WASM Hash: <Hash {...this.props} id={this.wasmHash()} /><br/>
           {this.state.accountContractId
             && <span>Account Contract ID: <Contract {...this.props} id={this.state.accountContractId} /></span>
             || <button onClick={this.handleDeploy} disabled={this.props.bundlerKey == null || this.props.credential == null}>Deploy</button>}
         </fieldset>
       </div>
     );
+  }
+
+  pk() {
+    const pk = new Uint8Array(this.props.credential.response.getPublicKey());
+    // Strip of ASN1 DER encoding header for each key type.
+    // This could do propr DER decoding, but since the header lengths are
+    // predictable, it is simply truncating the prefix.
+    switch (this.props.credential?.response?.getPublicKeyAlgorithm()) {
+      case -8: return pk.slice(12); // ed25519 has 12 bytes of DER stuff at the start
+      case -7: return pk.slice(26); // ecdsa keys have 26 bytes of DER stuff at the start
+    }
+  }
+
+  wasmHash() {
+    switch (this.props.credential?.response?.getPublicKeyAlgorithm()) {
+      case -8: return this.props.accountEd25519ContractWasm;
+      case -7: return this.props.accountSecp256r1ContractWasm;
+    }
   }
 
   hexToUint8Array(hex) {

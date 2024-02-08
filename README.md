@@ -7,8 +7,9 @@ This repo contains [Soroban] contracts that demonstrate account abstraction on [
 
 Contracts:
 
-- `contract-factory` – A Soroban factory contract that deploys and initializes new deployments of webauthn contract accounts.
-- `contract-ed25519` – A Soroban account contract that is initialized with a ed25519 public key for a Webauthn device (passkey from a browser, computer, phone, Yubikey, etc). This contract acts as an account on network, holding assets, etc, and is controlled by the Webauthn device's signatures.
+- `contract-webauthn-factory` – A Soroban factory contract that deploys and initializes new deployments of webauthn contract accounts.
+- `contract-webauthn-ed25519` – A Soroban account contract that is initialized with a ed25519 public key for a Webauthn device (passkey from a browser, computer, phone, Yubikey, etc). This contract acts as an account on network, holding assets, etc, and is controlled by the Webauthn device's signatures.
+- `contract-webauthn-secp256r1` – A Soroban account contract that is initialized with a ecdsa secp256r1 public key for a Webauthn device (passkey from a browser, computer, phone, Yubikey, etc). This contract acts as an account on network, holding assets, etc, and is controlled by the Webauthn device's signatures.
 
 Also:
 

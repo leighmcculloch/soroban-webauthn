@@ -7,6 +7,8 @@ class Refund extends React.Component {
   async handleRefund() {
     this.props.onLog(<span>⏳ Refunding...</span>);
 
+    const argWasmHash = this.hexToUint8Array(this.wasmHash());
+
     const ledgerResp = await (await fetch(`${this.props.horizonUrl}/ledgers/?order=desc&limit=1`)).json();
     const lastLedger = ledgerResp._embedded.records[0].sequence;
 
@@ -47,6 +49,11 @@ class Refund extends React.Component {
       },
     });
 
+    const signature73 = new Uint8Array(credentialAuth.response.signature);
+    this.props.onLog(<span>ℹ️ Signature (ASN1 DER): <code>{[...signature73].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
+    const signature64 = this.convertSignature73To64(signature73);
+    this.props.onLog(<span>ℹ️ Signature: <code>{[...signature64].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
+
     const op = StellarSdk.Operation.invokeHostFunction({
       func: StellarSdk.xdr.HostFunction.hostFunctionTypeInvokeContract(invocationArgs),
       auth: [new StellarSdk.xdr.SorobanAuthorizationEntry({
@@ -56,21 +63,19 @@ class Refund extends React.Component {
             address: StellarSdk.Address.fromString(this.props.accountContractId).toScAddress(),
             nonce,
             signatureExpirationLedger,
-            signature: StellarSdk.xdr.ScVal.scvVec([
-              StellarSdk.xdr.ScVal.scvMap([
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('authenticator_data'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.authenticatorData)),
-                }),
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('client_data_json'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.clientDataJSON)),
-                }),
-                new StellarSdk.xdr.ScMapEntry({
-                  key: StellarSdk.xdr.ScVal.scvSymbol('signature'),
-                  val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.signature)),
-                }),
-              ])
+            signature: StellarSdk.xdr.ScVal.scvMap([
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('authenticator_data'),
+                val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.authenticatorData)),
+              }),
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('client_data_json'),
+                val: StellarSdk.xdr.ScVal.scvBytes(new Uint8Array(credentialAuth.response.clientDataJSON)),
+              }),
+              new StellarSdk.xdr.ScMapEntry({
+                key: StellarSdk.xdr.ScVal.scvSymbol('signature'),
+                val: StellarSdk.xdr.ScVal.scvBytes(signature64),
+              }),
             ])
           })
         ),
@@ -79,7 +84,7 @@ class Refund extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 901919, networkPassphrase: this.props.networkPassphrase },
+      { fee: 3889152, networkPassphrase: this.props.networkPassphrase },
     )
       .addOperation(op)
       .setTimeout(30)
@@ -103,9 +108,9 @@ class Refund extends React.Component {
                 durability: StellarSdk.xdr.ContractDataDurability.persistent()
               })
             ),
-            // Contract code for account contract.
+            // Contract code for account contracts.
             StellarSdk.xdr.LedgerKey.contractCode(
-              new StellarSdk.xdr.LedgerKeyContractCode({ hash: this.hexToUint8Array(this.props.accountContractWasm) })
+              new StellarSdk.xdr.LedgerKeyContractCode({ hash: argWasmHash })
             ),
           ],
           // Write
@@ -140,11 +145,11 @@ class Refund extends React.Component {
           ],
         )
         .setResources(
-          3480449, // Instructions
-          5396, // Read Bytes
-          668, // Write Bytes
+          283068193, // Instructions
+          30408, // Read Bytes
+          440, // Write Bytes
         )
-        .setRefundableFee(20536)
+        .setResourceFee(2889152)
         .build())
       .build();
 
@@ -175,6 +180,64 @@ class Refund extends React.Component {
         </fieldset>
       </div>
     );
+  }
+
+  convertSignature73To64(sig) {
+    // ASN Sequence
+    let offset = 0;
+    if (sig[offset] != 0x30) {
+      throw "signature is not a sequence";
+    }
+    offset += 1;
+
+    // ASN Sequence Byte Length
+    offset += 1;
+
+    // ASN Integer (R)
+    if (sig[offset] != 0x02) {
+      throw "first element in sequence is not an integer";
+    }
+    offset += 1;
+    // ASN Integer (R) Byte Length
+    const rLen = sig[offset];
+    offset += 1;
+    // ASN Integer (R) Byte Value
+    if (rLen >= 33) {
+      if (rLen != 33 || sig[offset] != 0x00) {
+        throw "can only handle larger than 32 byte R's that are len 33 and lead with zero";
+      }
+      offset += 1;
+    }
+    const r = sig.slice(offset, offset+32);
+    offset += 32;
+
+    // ASN Integer (S)
+    if (sig[offset] != 0x02) {
+      throw "second element in sequence is not an integer";
+    }
+    offset += 1;
+    // ASN Integer (S) Byte Length
+    const sLen = sig[offset];
+    offset += 1;
+    // ASN Integer (S) Byte Value
+    if (sLen >= 33) {
+      if (sLen != 33 || sig[offset] != 0x00) {
+        throw "can only handle larger than 32 byte R's that are len 33 and lead with zero";
+      }
+      offset += 1;
+    }
+    const s = sig.slice(offset, offset+32);
+    offset += 32;
+
+    const signature64 = new Uint8Array([...r, ...s]);
+    return signature64;
+  }
+
+  wasmHash() {
+    switch (this.props.credential.response.getPublicKeyAlgorithm()) {
+      case -8: return this.props.accountEd25519ContractWasm;
+      case -7: return this.props.accountSecp256r1ContractWasm;
+    }
   }
 
   hexToUint8Array(hex) {
