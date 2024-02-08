@@ -50,7 +50,9 @@ class Refund extends React.Component {
     });
 
     const signature73 = new Uint8Array(credentialAuth.response.signature);
-    const signature64 = this.hexToUint8Array(prompt([...signature73].map(x => x.toString(16).padStart(2, '0')).join(''), ""));
+    this.props.onLog(<span>ℹ️ Signature (ASN1 DER): <code>{[...signature73].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
+    const signature64 = this.convertSignature73To64(signature73);
+    this.props.onLog(<span>ℹ️ Signature: <code>{[...signature64].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
 
     const op = StellarSdk.Operation.invokeHostFunction({
       func: StellarSdk.xdr.HostFunction.hostFunctionTypeInvokeContract(invocationArgs),
@@ -82,7 +84,7 @@ class Refund extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 901919, networkPassphrase: this.props.networkPassphrase },
+      { fee: 3889152, networkPassphrase: this.props.networkPassphrase },
     )
       .addOperation(op)
       .setTimeout(30)
@@ -143,11 +145,11 @@ class Refund extends React.Component {
           ],
         )
         .setResources(
-          40480449, // Instructions
-          5396, // Read Bytes
-          668, // Write Bytes
+          283068193, // Instructions
+          30408, // Read Bytes
+          440, // Write Bytes
         )
-        .setResourceFee(20536)
+        .setResourceFee(2889152)
         .build())
       .build();
 
@@ -178,6 +180,57 @@ class Refund extends React.Component {
         </fieldset>
       </div>
     );
+  }
+
+  convertSignature73To64(sig) {
+    // ASN Sequence
+    let offset = 0;
+    if (sig[offset] != 0x30) {
+      throw "signature is not a sequence";
+    }
+    offset += 1;
+
+    // ASN Sequence Byte Length
+    offset += 1;
+
+    // ASN Integer (R)
+    if (sig[offset] != 0x02) {
+      throw "first element in sequence is not an integer";
+    }
+    offset += 1;
+    // ASN Integer (R) Byte Length
+    const rLen = sig[offset];
+    offset += 1;
+    // ASN Integer (R) Byte Value
+    if (rLen >= 33) {
+      if (rLen != 33 || sig[offset] != 0x00) {
+        throw "can only handle larger than 32 byte R's that are len 33 and lead with zero";
+      }
+      offset += 1;
+    }
+    const r = sig.slice(offset, offset+32);
+    offset += 32;
+
+    // ASN Integer (S)
+    if (sig[offset] != 0x02) {
+      throw "second element in sequence is not an integer";
+    }
+    offset += 1;
+    // ASN Integer (S) Byte Length
+    const sLen = sig[offset];
+    offset += 1;
+    // ASN Integer (S) Byte Value
+    if (sLen >= 33) {
+      if (sLen != 33 || sig[offset] != 0x00) {
+        throw "can only handle larger than 32 byte R's that are len 33 and lead with zero";
+      }
+      offset += 1;
+    }
+    const s = sig.slice(offset, offset+32);
+    offset += 32;
+
+    const signature64 = new Uint8Array([...r, ...s]);
+    return signature64;
   }
 
   wasmHash() {

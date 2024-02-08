@@ -1,9 +1,6 @@
 use super::Error;
-use p256::ecdsa::{
-    signature::{hazmat::PrehashVerifier, Verifier as _},
-    Signature, VerifyingKey,
-};
-use soroban_sdk::{Bytes, BytesN};
+use p256::ecdsa::{signature::hazmat::PrehashVerifier as _, Signature, VerifyingKey};
+use soroban_sdk::BytesN;
 
 pub fn verify(key: &BytesN<65>, hash: &BytesN<32>, sig: &BytesN<64>) -> Result<(), Error> {
     let key = key.to_array();
