@@ -47,11 +47,6 @@ pub struct Signature {
     pub signature: BytesN<64>,
 }
 
-#[derive(serde::Deserialize)]
-struct ClientDataJson<'a> {
-    challenge: &'a str,
-}
-
 fn to_buffered_slice<const B: usize>(b: &Bytes) -> ([u8; B], Range<usize>) {
     let mut buf = [0u8; B];
     let slice = &mut buf[0..b.len() as usize];
@@ -84,7 +79,8 @@ impl CustomAccountInterface for Contract {
 
         let (buf, rng) = to_buffered_slice::<1024>(&signature.client_data_json);
         let cdj = &buf[rng];
-        let cdj: ClientDataJson = serde_json_wasm::de::from_slice(cdj).unwrap();
+        let cdj = core::str::from_utf8(cdj).unwrap();
+        let cdj = lite_json::parse_json(cdj).unwrap();
 
         // Build what is expected to be the beginning of the client data to
         // contain, including the challenge value, which is expected to be the
