@@ -14,7 +14,8 @@ doctest = false
 [dependencies]
 soroban-sdk = {version = "20.3.1"}
 p256 = { version = "0.13.2", default-features = false, features = ["ecdsa"] }
-lite-json = { version = "0.2.0" }
+serde = { version = "1", default-features = false, features = ["derive"] }
+serde-json-core = { version = "0.5.1", default-features = false }
 
 [dev-dependencies]
 soroban-sdk = {version = "20.3.1", features = ["testutils"]}

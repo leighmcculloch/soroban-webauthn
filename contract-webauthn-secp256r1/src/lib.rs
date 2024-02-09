@@ -47,11 +47,9 @@ pub struct Signature {
     pub signature: BytesN<64>,
 }
 
-fn to_buffered_slice<const B: usize>(b: &Bytes) -> ([u8; B], Range<usize>) {
-    let mut buf = [0u8; B];
-    let slice = &mut buf[0..b.len() as usize];
-    b.copy_into_slice(slice);
-    (buf, 0..slice.len())
+#[derive(serde::Deserialize)]
+struct ClientDataJson<'a> {
+    challenge: &'a str,
 }
 
 #[contractimpl]
@@ -79,30 +77,28 @@ impl CustomAccountInterface for Contract {
 
         let (buf, rng) = to_buffered_slice::<1024>(&signature.client_data_json);
         let cdj = &buf[rng];
-        let cdj = core::str::from_utf8(cdj).unwrap();
-        let cdj = lite_json::parse_json(cdj).unwrap();
+        let (cdj, _): (ClientDataJson, _) = serde_json_core::de::from_slice(cdj).unwrap();
 
-        // Build what is expected to be the beginning of the client data to
-        // contain, including the challenge value, which is expected to be the
-        // signature payload base64 URL encoded. The most resilient thing to do
-        // here would be to decode the JSON and extract the "challenge" key's
-        // value, then base64 URL decode the value and compare the result.
-        // However, even with lightweight JSON and base64 dependencies the
-        // contract comes out a little large. Doing the base64 encode in a
-        // minimal fashion and comparing the prefix requires less resources and
-        // should be as safe, albeit not as resilient if a client ever produces
-        // valid JSON that just happens to have different prefix.
-        let mut expected_prefix = *b"{\"type\":\"webauthn.get\",\"challenge\":\"___________________________________________\"";
-        base64_url::encode(&mut expected_prefix[36..79], &signature_payload.to_array());
-        let expected_prefix = Bytes::from_slice(&e, &expected_prefix);
+        let mut expected_challenge = *b"___________________________________________";
+        base64_url::encode(&mut expected_challenge, &signature_payload.to_array());
+        let expected_challenge = unsafe { core::str::from_utf8_unchecked(&expected_challenge) };
 
         // Check that the prefix containing the challenge/signature-payload is
         // the prefix expected.
-        let prefix = signature.client_data_json.slice(..expected_prefix.len());
-        if prefix != expected_prefix {
+        if cdj.challenge != expected_challenge {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
 
         Ok(())
     }
+}
+
+fn to_buffered_slice<const B: usize>(b: &Bytes) -> ([u8; B], Range<usize>) {
+    let mut buf = [0u8; B];
+    let len = b.len() as usize;
+    {
+        let slice = &mut buf[0..len];
+        b.copy_into_slice(slice);
+    }
+    (buf, 0..len)
 }
