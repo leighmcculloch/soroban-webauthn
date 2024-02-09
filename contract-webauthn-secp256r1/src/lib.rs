@@ -1,4 +1,6 @@
 #![no_std]
+use core::ops::Range;
+
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contracterror, contractimpl, contracttype, symbol_short, Bytes, BytesN, Env, Symbol,
@@ -45,6 +47,18 @@ pub struct Signature {
     pub signature: BytesN<64>,
 }
 
+#[derive(serde::Deserialize)]
+struct ClientDataJson<'a> {
+    challenge: &'a str,
+}
+
+fn to_buffered_slice<const B: usize>(b: &Bytes) -> ([u8; B], Range<usize>) {
+    let mut buf = [0u8; B];
+    let slice = &mut buf[0..b.len() as usize];
+    b.copy_into_slice(slice);
+    (buf, 0..slice.len())
+}
+
 #[contractimpl]
 impl CustomAccountInterface for Contract {
     type Error = Error;
@@ -67,6 +81,10 @@ impl CustomAccountInterface for Contract {
         payload.append(&e.crypto().sha256(&signature.client_data_json).into());
         let payload = e.crypto().sha256(&payload);
         secp256r1::verify(&pk, &payload, &signature.signature)?;
+
+        let (buf, rng) = to_buffered_slice::<1024>(&signature.client_data_json);
+        let cdj = &buf[rng];
+        let cdj: ClientDataJson = serde_json_wasm::de::from_slice(cdj).unwrap();
 
         // Build what is expected to be the beginning of the client data to
         // contain, including the challenge value, which is expected to be the
