@@ -84,7 +84,7 @@ class Refund extends React.Component {
 
     const transaction = new StellarSdk.TransactionBuilder(
       new StellarSdk.Account(key.publicKey(), accResp.sequence),
-      { fee: 3889152, networkPassphrase: this.props.networkPassphrase },
+      { fee: 30889152, networkPassphrase: this.props.networkPassphrase },
     )
       .addOperation(op)
       .setTimeout(30)
@@ -145,11 +145,11 @@ class Refund extends React.Component {
           ],
         )
         .setResources(
-          283068193, // Instructions
-          30408, // Read Bytes
+          285068193, // Instructions
+          34408, // Read Bytes
           440, // Write Bytes
         )
-        .setResourceFee(2889152)
+        .setResourceFee(3907992)
         .build())
       .build();
 

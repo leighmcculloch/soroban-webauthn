@@ -25,6 +25,8 @@ pub enum Error {
     Secp256r1PublicKeyParse = 4,
     Secp256r1SignatureParse = 5,
     Secp256r1VerifyFailed = 6,
+    // TODO: Explode this error to all the errors that the JSON library can return.
+    JsonParseError = 7,
 }
 
 const STORAGE_KEY_PK: Symbol = symbol_short!("pk");
@@ -75,17 +77,21 @@ impl CustomAccountInterface for Contract {
         let payload = e.crypto().sha256(&payload);
         secp256r1::verify(&pk, &payload, &signature.signature)?;
 
-        let (buf, rng) = to_buffered_slice::<1024>(&signature.client_data_json);
-        let cdj = &buf[rng];
-        let (cdj, _): (ClientDataJson, _) = serde_json_core::de::from_slice(cdj).unwrap();
+        // Parse the client data JSON, extracting the base64 url encoded
+        // challenge.
+        let (client_data_json_buf, range) = to_buffered_slice::<1024>(&signature.client_data_json);
+        let client_data_json = &client_data_json_buf[range];
+        let (client_data, _): (ClientDataJson, _) =
+            serde_json_core::de::from_slice(client_data_json).map_err(|_| Error::JsonParseError)?;
 
+        // Build what the base64 url challenge is expected.
         let mut expected_challenge = *b"___________________________________________";
         base64_url::encode(&mut expected_challenge, &signature_payload.to_array());
         let expected_challenge = unsafe { core::str::from_utf8_unchecked(&expected_challenge) };
 
-        // Check that the prefix containing the challenge/signature-payload is
-        // the prefix expected.
-        if cdj.challenge != expected_challenge {
+        // Check that the challenge inside the client data JSON that was signed
+        // is identical to the expected challenge.
+        if client_data.challenge != expected_challenge {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
 
