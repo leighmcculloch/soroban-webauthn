@@ -886,6 +886,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-json-core"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c9e1ab533c0bc414c34920ec7e5f097101d126ed5eac1a1aac711222e0bbb33"
+dependencies = [
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.192"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1413,6 +1423,8 @@ name = "webauthn-account-secp256r1"
 version = "0.1.0"
 dependencies = [
  "p256",
+ "serde",
+ "serde-json-core",
  "sha256",
  "soroban-sdk",
  "stellar-xdr",
