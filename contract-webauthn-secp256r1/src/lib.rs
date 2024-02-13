@@ -87,11 +87,10 @@ impl CustomAccountInterface for Contract {
         // Build what the base64 url challenge is expected.
         let mut expected_challenge = *b"___________________________________________";
         base64_url::encode(&mut expected_challenge, &signature_payload.to_array());
-        let expected_challenge = unsafe { core::str::from_utf8_unchecked(&expected_challenge) };
 
         // Check that the challenge inside the client data JSON that was signed
         // is identical to the expected challenge.
-        if client_data.challenge != expected_challenge {
+        if client_data.challenge.as_bytes() != expected_challenge {
             return Err(Error::ClientDataJsonChallengeIncorrect);
         }
 

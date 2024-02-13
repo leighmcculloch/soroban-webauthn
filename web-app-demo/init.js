@@ -4,7 +4,7 @@ ReactDOM.render(<Ui
   factoryContractWasm="90cdcf58711a515e8da7088a6577a1c8f088528d6525f8fba774e7b155d4e8d3"
   factoryContractId="CBR7WSG5GIQVPP3N2NSPWXGE7ALRAHDB627T6AH2QSOVXQFCH6UPHX5M"
   accountEd25519ContractWasm="c9c6b3d678bc9f69edc1a0c5d55291c179f2a53adcee0d1faa0e5ca17b7cc9a1"
-  accountSecp256r1ContractWasm="49362f72c0c1ce4047418895227ae90172fb53dbe51446c684882cf4a2533c43"
+  accountSecp256r1ContractWasm="7a60824c5e5b0872b3e332fcec55166ed36c99e68acb97574ffe16733ffd0386"
   friendbotUrl="http://localhost:8000/friendbot"
   horizonUrl="http://localhost:8000"
   explorerContractBaseUrl=""
