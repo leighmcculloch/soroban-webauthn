@@ -1,6 +1,4 @@
 #![no_std]
-use core::ops::Range;
-
 use soroban_sdk::{
     auth::{Context, CustomAccountInterface},
     contract, contracterror, contractimpl, contracttype, symbol_short, Bytes, BytesN, Env, Symbol,
@@ -25,7 +23,6 @@ pub enum Error {
     Secp256r1PublicKeyParse = 4,
     Secp256r1SignatureParse = 5,
     Secp256r1VerifyFailed = 6,
-    // TODO: Explode this error to all the errors that the JSON library can return.
     JsonParseError = 7,
 }
 
@@ -79,8 +76,8 @@ impl CustomAccountInterface for Contract {
 
         // Parse the client data JSON, extracting the base64 url encoded
         // challenge.
-        let (client_data_json_buf, range) = to_buffered_slice::<1024>(&signature.client_data_json);
-        let client_data_json = &client_data_json_buf[range];
+        let client_data_json = signature.client_data_json.to_buffer::<1024>();
+        let client_data_json = client_data_json.as_slice();
         let (client_data, _): (ClientDataJson, _) =
             serde_json_core::de::from_slice(client_data_json).map_err(|_| Error::JsonParseError)?;
 
@@ -96,14 +93,4 @@ impl CustomAccountInterface for Contract {
 
         Ok(())
     }
-}
-
-fn to_buffered_slice<const B: usize>(b: &Bytes) -> ([u8; B], Range<usize>) {
-    let mut buf = [0u8; B];
-    let len = b.len() as usize;
-    {
-        let slice = &mut buf[0..len];
-        b.copy_into_slice(slice);
-    }
-    (buf, 0..len)
 }

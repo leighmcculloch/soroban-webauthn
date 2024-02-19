@@ -49,10 +49,10 @@ class Refund extends React.Component {
       },
     });
 
-    const signature73 = new Uint8Array(credentialAuth.response.signature);
-    this.props.onLog(<span>ℹ️ Signature (ASN1 DER): <code>{[...signature73].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
-    const signature64 = this.convertSignature73To64(signature73);
-    this.props.onLog(<span>ℹ️ Signature: <code>{[...signature64].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
+    const signatureRaw = new Uint8Array(credentialAuth.response.signature);
+    this.props.onLog(<span>ℹ️ Signature (Raw): <code>{[...signatureRaw].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
+    const signature = this.convertSignatureWebauthnToCompact(signatureRaw);
+    this.props.onLog(<span>ℹ️ Signature (Compact): <code>{[...signature].map(x => x.toString(16).padStart(2, '0')).join('')}</code></span>);
 
     const op = StellarSdk.Operation.invokeHostFunction({
       func: StellarSdk.xdr.HostFunction.hostFunctionTypeInvokeContract(invocationArgs),
@@ -60,7 +60,7 @@ class Refund extends React.Component {
         rootInvocation: invocation,
         credentials: StellarSdk.xdr.SorobanCredentials.sorobanCredentialsAddress(
           new StellarSdk.xdr.SorobanAddressCredentials({
-            address: StellarSdk.Address.fromString(this.props.accountContractId).toScAddress(),
+           address: StellarSdk.Address.fromString(this.props.accountContractId).toScAddress(),
             nonce,
             signatureExpirationLedger,
             signature: StellarSdk.xdr.ScVal.scvMap([
@@ -74,7 +74,7 @@ class Refund extends React.Component {
               }),
               new StellarSdk.xdr.ScMapEntry({
                 key: StellarSdk.xdr.ScVal.scvSymbol('signature'),
-                val: StellarSdk.xdr.ScVal.scvBytes(signature64),
+                val: StellarSdk.xdr.ScVal.scvBytes(signature),
               }),
             ])
           })
@@ -182,7 +182,20 @@ class Refund extends React.Component {
     );
   }
 
-  convertSignature73To64(sig) {
+  convertSignatureWebauthnToCompact(sig) {
+    // Webauthn provides the signature in different formats depending on the
+    // algorithm in use.
+    switch (this.props.credential.response.getPublicKeyAlgorithm()) {
+      case -8:
+        // Signature is the raw signature for ed25519.
+        return sig;
+      case -7:
+        // Signature is the ASN encoded signature for ecdsa.
+        return this.convertEcdsaSignatureAsnToCompact(sig);
+    }
+  }
+
+  convertEcdsaSignatureAsnToCompact(sig) {
     // ASN Sequence
     let offset = 0;
     if (sig[offset] != 0x30) {

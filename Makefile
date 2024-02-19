@@ -18,6 +18,8 @@ build:
 	ls -lah out/*.optimized.wasm
 
 deploy:
+	soroban keys fund $(SOROBAN_ACCOUNT) || true
+	soroban contract asset deploy --asset native || true
 	soroban contract install --wasm out/webauthn_factory.optimized.wasm
 	soroban contract deploy --wasm out/webauthn_factory.optimized.wasm
 	soroban contract install --wasm out/webauthn_account_ed25519.optimized.wasm
