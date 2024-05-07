@@ -73,11 +73,14 @@ class Deploy extends React.Component {
           ],
         )
         .setResources(
-          16535694, // Instructions
-          50472, // Read Bytes
-          1060, // Write Bytes
+          // 16535694, // Instructions
+          1885923, // Instructions
+          // 50472, // Read Bytes
+          6324,
+          // 1060, // Write Bytes
+          196,
         )
-        .setResourceFee(500058)
+        .setResourceFee(5908186)
         .build())
       .build();
 
